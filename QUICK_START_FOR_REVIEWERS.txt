@@ -1,0 +1,179 @@
+# QUICK START GUIDE FOR REVIEWERS
+# License to Live: MIAS
+
+## FOR PROFESSOR/REVIEWERS - 5 MINUTE SETUP
+
+This guide gets you running the system in 5 minutes.
+
+---
+
+## STEP 1: INSTALL R PACKAGES (2 minutes)
+
+Open RStudio and run:
+
+```r
+install.packages(c("shiny", "DBI", "RMySQL", "shinyjs", 
+                   "stringr", "lubridate", "DT", "ggplot2", 
+                   "gridExtra", "dplyr", "scales"))
+```
+
+Wait for installation to complete.
+
+---
+
+## STEP 2: DOWNLOAD PROJECT FILES (1 minute)
+
+Download all files from the shared location (OneDrive/GitHub) to a folder.
+
+Example: C:/MIAS_Review/
+
+---
+
+## STEP 3: SET WORKING DIRECTORY (30 seconds)
+
+In RStudio console:
+
+```r
+setwd("C:/MIAS_Review")  # Change to your folder path
+```
+
+---
+
+## STEP 4: LAUNCH THE SYSTEM (30 seconds)
+
+```r
+source("launch_mias.R")
+```
+
+You'll see a menu with 4 options.
+
+---
+
+## STEP 5: EXPLORE THE APPLICATIONS (5-10 minutes)
+
+### Option 1: Patient Registration
+```
+Type: 1
+Press: Enter
+```
+**NOTE:** Requires Eyoyo barcode scanner. 
+Skip this if you don't have the scanner.
+Demo data already in database.
+
+### Option 2: Medical Information Manager
+```
+Type: 2
+Press: Enter
+```
+- Search for "BRYAN" or "BARBER"
+- Click on patient row
+- Explore 6 tabs (Conditions, Allergies, Medications, etc.)
+- Try adding test data
+
+### Option 3: Analytics Dashboard ⭐ (RECOMMENDED TO REVIEW FIRST)
+```
+Type: 3
+Press: Enter
+```
+- View 8 summary statistics at top
+- Explore 5 visualization tabs:
+  * Vaccination Coverage
+  * Patient Demographics
+  * Medication Trends
+  * Allergy Analysis
+  * Comprehensive Report
+
+---
+
+## DATABASE ACCESS (OPTIONAL)
+
+If you want to view the database directly:
+
+**Tool:** VS Code with Database Client extension
+OR MySQL Workbench
+OR Any MySQL client
+
+**Connection Details:**
+- Host: mias-db.chwakwqqclzv.us-east-2.rds.amazonaws.com
+- Port: 3306
+- Database: mias_db
+- Username: admin
+- Password: License2Live
+
+**Quick Test Query:**
+```sql
+USE mias_db;
+SELECT * FROM Patients;
+```
+
+---
+
+## TROUBLESHOOTING
+
+**Problem:** Package installation fails
+**Solution:** Install packages one at a time
+
+**Problem:** "Cannot find file 'launch_mias.R'"
+**Solution:** Check working directory with getwd()
+
+**Problem:** Database connection fails
+**Solution:** Check internet connection, credentials are correct
+
+**Problem:** App launches but shows "No data available"
+**Solution:** This is normal - use medical_info_manager.R to add test data
+
+---
+
+## WHAT TO EVALUATE
+
+### Database Design (Phase 1)
+- Review: MIAS_ERD_Design.docx
+- Check: 10 tables, relationships, normalization
+- SQL: mias_database_schema.sql
+
+### Barcode Integration (Phase 2)
+- Review: Barcode_Scanner_Integration_Guide.docx
+- Code: aamva_parser.R, patient_registration_app.R
+- Note: Requires physical scanner for live demo
+
+### Medical Management (Phase 3)
+- Review: Phase_3_Medical_Information_Manager.docx
+- Run: medical_info_manager.R
+- Test: Add/view medical data across 6 categories
+
+### Analytics (Phase 4) ⭐ MS ANALYTICS REQUIREMENT
+- Review: Phase_4_Analytics_Dashboard.docx
+- Run: analytics_dashboard.R
+- Check: ggplot2 visualizations, 8 metrics, 5 tabs
+
+---
+
+## DEMO WORKFLOW FOR STUDENTS
+
+If students are presenting:
+
+1. Show ERD diagram (2 min)
+2. Demo medical_info_manager.R (3 min)
+   - Search patient
+   - Add medical data
+3. Demo analytics_dashboard.R (5 min) ⭐ KEY DELIVERABLE
+   - Show all visualizations
+   - Explain insights
+4. Show database in VS Code (2 min)
+   - Run SELECT queries
+   - Show populated tables
+
+Total: 12 minutes
+
+---
+
+## CONTACT
+
+**Team:** Ryan King, Raphe Burstein, Bryan Barber
+**Course:** SMU ITOM 6265 - Database Management
+
+For questions or issues, contact team members via email/course platform.
+
+---
+
+READY TO START? Run: source("launch_mias.R")
