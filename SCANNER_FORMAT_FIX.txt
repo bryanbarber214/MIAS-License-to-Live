@@ -1,0 +1,78 @@
+# =====================================================
+# IMPORTANT UPDATE: Eyoyo Scanner Format Fix
+# =====================================================
+
+## What We Discovered
+
+Your Eyoyo EY-009P scanner outputs the barcode data in a specific format:
+1. @ symbol on first line
+2. Line breaks throughout the barcode data (splits it into ~30 lines)
+
+Example of what the scanner outputs:
+```
+@
+ANSI 636015090002DL00410280ZT03210007DLDCACM
+DCBNONE
+DCDNONE
+DBA05252029
+DCSBARBER
+...etc
+```
+
+## What We Fixed
+
+Updated the parser to automatically:
+✓ Strip the @ symbol
+✓ Remove ALL line breaks and join into one continuous string
+✓ Clean up whitespace
+
+## How to Test
+
+Run this test script to verify the fix:
+```r
+source("test_eyoyo_format.R")
+```
+
+This uses the EXACT output from your scanner (with @ and line breaks).
+You should see: ✅ SUCCESS! Parser handled Eyoyo format correctly!
+
+## Using the Shiny App
+
+No changes needed to your workflow:
+1. Open the Shiny app
+2. Click in the barcode input field
+3. Scan your license (will output @ and line breaks)
+4. Click "Parse Barcode" 
+5. Parser automatically cleans and extracts data ✅
+
+The app now has a helpful note explaining that the @ and line breaks are normal.
+
+## Files Updated
+
+- aamva_parser.R (added scanner output cleaning)
+- patient_registration_app.R (added helpful note, larger text area)
+- test_eyoyo_format.R (NEW - test with exact scanner format)
+
+## Next Steps
+
+1. Run test_eyoyo_format.R to verify the fix
+2. Launch the Shiny app and test with real scanning
+3. Register a few test patients
+4. Proceed to Phase 3 (medical information entry)
+
+## Technical Details
+
+The cleaning code in parse_aamva_barcode():
+```r
+# Remove leading @ symbol
+barcode_data <- gsub("^@\\s*", "", barcode_data)
+
+# Remove ALL line breaks 
+barcode_data <- gsub("[\r\n]+", "", barcode_data)
+
+# Trim whitespace
+barcode_data <- str_trim(barcode_data)
+```
+
+This ensures the AAMVA parser receives one continuous string
+regardless of how the scanner formats its output.

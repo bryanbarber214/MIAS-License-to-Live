@@ -1,0 +1,200 @@
+# =====================================================
+# Phase 3: Medical Information Manager - Setup Guide
+# =====================================================
+
+## What You'll Be Able To Do
+
+With the Medical Information Manager, you can:
+
+✅ Search for existing patients (by license number, name)
+✅ View complete patient profiles
+✅ Add/view medical conditions (with diagnosis dates and severity)
+✅ Add/view allergies (with reaction types and severity levels)
+✅ Add/view medications (current and historical)
+✅ Add/view vaccination records
+✅ Add/view insurance policies
+✅ Add/view emergency contacts
+
+## Installation Steps
+
+### Step 1: Install Additional Package (if needed)
+
+The app uses the DT package for interactive tables. Install it:
+
+```r
+install.packages("DT")
+```
+
+### Step 2: Place the File
+
+Download medical_info_manager.R to your MIAS_Core folder
+(same folder where you have patient_registration_app.R)
+
+### Step 3: Set Working Directory
+
+In RStudio Console:
+
+```r
+setwd("C:/Users/bryan/OneDrive/SMU MSBA/Fall Mod B - 2025/ITOM 6265 - Database Design for Business (Kannan)/Final Project/MIAS_Core")
+```
+
+### Step 4: Launch the App
+
+```r
+library(shiny)
+runApp("medical_info_manager.R")
+```
+
+## How to Use the App
+
+### 1. Find a Patient
+
+- When the app opens, you'll see a table of all patients
+- Use the search box to find by license number, first name, or last name
+- Click on a row to select that patient
+
+### 2. Add Medical Information
+
+Once a patient is selected, you'll see 6 tabs:
+
+**Medical Conditions Tab:**
+- Add diagnoses like "Diabetes Type 2", "Hypertension"
+- Specify diagnosis date and severity
+- Add any relevant notes
+
+**Allergies Tab:**
+- Add allergens (medications, foods, environmental)
+- Specify type, reaction, and severity
+- CRITICAL for emergency situations!
+
+**Medications Tab:**
+- Add current or past medications
+- Include dosage, frequency, prescribing doctor
+- Leave end date blank for current medications
+
+**Vaccinations Tab:**
+- Record all vaccinations
+- Track next due dates for boosters
+- Include lot numbers for record keeping
+
+**Insurance Tab:**
+- Add insurance policies
+- Mark active vs. inactive policies
+- Track effective and expiration dates
+
+**Emergency Contacts Tab:**
+- Add emergency contacts with priority order
+- Primary contact = priority 1
+- Include multiple phone numbers if available
+
+### 3. View Existing Records
+
+Each tab shows existing records in a table
+- Tables are searchable and sortable
+- See all medical history at a glance
+
+## Testing Workflow
+
+### Add Complete Medical History for BRYAN BARBER
+
+Since you already registered yourself, let's add your full medical profile:
+
+1. **Launch the app**
+2. **Search for "BRYAN" or "10896644"**
+3. **Click on your patient record**
+4. **Add sample data to each tab**
+
+Example data to add:
+
+**Medical Conditions:**
+- None (or add hypothetical conditions for testing)
+
+**Allergies:**
+- Penicillin, Medication, Anaphylaxis, Life-threatening
+
+**Medications:**
+- Aspirin, 81mg, Daily, Started: today
+
+**Vaccinations:**
+- COVID-19 Booster, Administered: (recent date)
+- Influenza, Administered: (recent date)
+
+**Insurance:**
+- Provider: Blue Cross Blue Shield
+- Policy: ABC123456
+- Currently Active
+
+**Emergency Contact:**
+- Name: Jane Barber
+- Relationship: Spouse
+- Phone: 555-0123
+- Priority: 1
+
+## Verifying Data in Database
+
+After adding medical information, check VS Code:
+
+```sql
+USE mias_db;
+
+-- Check conditions
+SELECT * FROM Medical_Conditions WHERE patient_id = 2;
+
+-- Check allergies
+SELECT * FROM Allergies WHERE patient_id = 2;
+
+-- Check medications
+SELECT * FROM Medications WHERE patient_id = 2;
+
+-- Check vaccinations
+SELECT * FROM Vaccinations WHERE patient_id = 2;
+
+-- Check insurance
+SELECT * FROM Insurance WHERE patient_id = 2;
+
+-- Check emergency contacts
+SELECT * FROM Emergency_Contacts WHERE patient_id = 2;
+```
+
+## Tips for Success
+
+✓ Select a patient BEFORE trying to add medical info
+✓ Fill in required fields (marked in the forms)
+✓ Use realistic data for testing
+✓ Check "Existing Records" tables to verify additions
+✓ Add at least 2-3 entries per category for good test data
+
+## Next Steps After Testing
+
+Once you've tested with your own patient record:
+
+1. Add 4-5 more test patients using patient_registration_app.R
+2. Add medical histories for each patient
+3. Create diverse test data (different conditions, medications, etc.)
+4. This prepares you for Phase 4: Analytics & Visualization
+
+## Common Issues
+
+**"Please select a patient above"**
+- Solution: Click on a row in the patient search table first
+
+**"Error: there is no package called 'DT'"**
+- Solution: Run install.packages("DT")
+
+**"Database connection error"**
+- Solution: Check that patient_registration_app.R still connects successfully
+
+**Form doesn't clear after adding**
+- Solution: Manually clear fields and add next entry
+
+## What's Next: Phase 4 Preview
+
+After Phase 3, we'll build:
+
+📊 Vaccination coverage dashboard (ggplot2)
+📊 Patient demographics analysis
+📊 Medication trends visualization
+📊 Analytics component (required for project)
+
+This medical information manager gives you the complete patient profiles
+needed to create meaningful analytics!

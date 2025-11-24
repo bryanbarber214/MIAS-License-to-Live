@@ -1,0 +1,288 @@
+# =====================================================
+# Phase 4: Analytics Dashboard - Setup & Usage Guide
+# =====================================================
+
+## 📊 What the Analytics Dashboard Does
+
+The Analytics Dashboard is a comprehensive data visualization tool that provides:
+
+✅ Real-time system statistics (8 key metrics)
+✅ Vaccination coverage analysis (patients vaccinated + total doses)
+✅ Patient demographics (age distribution, blood type, geography)
+✅ Medication trends (top 10 most prescribed)
+✅ Allergy severity analysis (critical for emergency preparedness)
+✅ Comprehensive report (all visualizations combined)
+
+This satisfies the MS Analytics program requirement for an analytics component!
+
+## 🚀 Installation Steps
+
+### Step 1: Install Required Packages
+
+The dashboard uses ggplot2 and gridExtra for visualizations:
+
+```r
+install.packages("ggplot2")
+install.packages("gridExtra")
+```
+
+Note: You should already have dplyr, scales, and other packages from previous phases.
+
+### Step 2: Place the File
+
+Download analytics_dashboard.R to your MIAS_Core folder
+(same folder with your other apps)
+
+### Step 3: Set Working Directory
+
+```r
+setwd("C:/Users/bryan/OneDrive/SMU MSBA/Fall Mod B - 2025/ITOM 6265 - Database Design for Business (Kannan)/Final Project/MIAS_Core")
+```
+
+### Step 4: Launch the Dashboard
+
+```r
+library(shiny)
+runApp("analytics_dashboard.R")
+```
+
+## 📈 Dashboard Features
+
+### Summary Statistics (Top of Dashboard)
+
+8 key metrics displayed in stat boxes:
+- Total Patients
+- Medical Conditions
+- Active Medications
+- Vaccinations Given
+- Known Allergies
+- Active Insurance Policies
+- Emergency Contacts
+- Average Patient Age
+
+These update in real-time when you click "Refresh Data"
+
+### Five Analytics Tabs
+
+**Tab 1: 💉 Vaccination Coverage**
+- Side-by-side bar charts
+- Left: Patients vaccinated by vaccine type
+- Right: Total doses administered
+- Useful for: Tracking immunization rates
+
+**Tab 2: 👥 Patient Demographics**
+- Age Distribution: Histogram showing patient age ranges
+  - Includes average age line
+- Blood Type Distribution: Pie chart of blood types
+- Geographic Distribution: Bar chart by state
+- Useful for: Understanding patient population
+
+**Tab 3: 💊 Medication Trends**
+- Top 10 most prescribed medications
+- Shows patient count per medication
+- Useful for: Identifying common treatments, pharmacy inventory planning
+
+**Tab 4: ⚠️ Allergy Analysis**
+- Grouped bar chart by allergy type and severity
+- Color-coded by severity:
+  * Red = Life-threatening
+  * Orange = Severe
+  * Yellow = Moderate
+  * Blue = Mild
+- Useful for: Emergency preparedness, risk assessment
+
+**Tab 5: 📈 Comprehensive Report**
+- All visualizations in one view (2x2 grid)
+- Perfect for: Presentations, project reports
+- Can be exported/screenshotted
+
+## 🧪 Testing the Dashboard
+
+### Step 1: Ensure You Have Test Data
+
+Before the dashboard shows meaningful visualizations, you need:
+- At least 2-3 patients registered
+- Medical information added for each patient:
+  * Vaccinations (for vaccination coverage chart)
+  * Medications (for medication trends)
+  * Allergies (for allergy analysis)
+  * Blood types (for demographics)
+
+If you haven't added enough test data yet, go back to:
+1. patient_registration_app.R - register more patients
+2. medical_info_manager.R - add medical histories
+
+### Step 2: Launch and Explore
+
+1. Run the dashboard
+2. Check the summary statistics at the top
+3. Navigate through each tab
+4. Click "Refresh Data" to update (after adding more data)
+
+### Step 3: Take Screenshots
+
+For your project presentation, capture:
+- The summary statistics section
+- Vaccination coverage chart
+- Patient demographics (all 3 charts)
+- Medication trends
+- Comprehensive report view
+
+## 💡 Tips for Best Results
+
+**Add Diverse Test Data:**
+- Register 5-10 patients with different ages, states, blood types
+- Add variety in vaccinations (COVID-19, Influenza, etc.)
+- Include multiple medications (Lisinopril, Metformin, Aspirin, etc.)
+- Vary allergy severities (Mild to Life-threatening)
+
+**Use Realistic Data:**
+- Real medication names
+- Appropriate severity levels
+- Logical date ranges
+- Actual state abbreviations (TX, CA, NY, etc.)
+
+**Check for Errors:**
+If a chart shows "No data available":
+- That category needs more entries in the database
+- Use medical_info_manager.R to add data
+- Click "Refresh Data" button
+
+## 📊 Analytics for Your Project Report
+
+### Key Findings to Highlight
+
+Based on your test data, you can analyze:
+
+1. **Vaccination Coverage:**
+   - "X% of patients have received COVID-19 vaccination"
+   - "Influenza vaccination rate is Y%"
+
+2. **Demographics:**
+   - "Average patient age is Z years"
+   - "Most common blood type is O+"
+   - "Majority of patients are from Texas"
+
+3. **Medication Patterns:**
+   - "Top 3 medications are: [list]"
+   - "Chronic condition management medications dominate"
+
+4. **Allergy Awareness:**
+   - "X allergies classified as life-threatening"
+   - "Medication allergies represent Y% of total"
+
+### For Your Presentation
+
+Structure your analytics section:
+1. Show summary statistics
+2. Present 2-3 key visualizations
+3. Explain insights/trends observed
+4. Discuss implications for healthcare delivery
+
+## 🔄 Workflow Integration
+
+The analytics dashboard completes the full MIAS workflow:
+
+1. **Patient Registration** (patient_registration_app.R)
+   → Scan driver's license
+   → Register patient
+
+2. **Medical History Entry** (medical_info_manager.R)
+   → Search patient
+   → Add medical information
+
+3. **Analytics & Insights** (analytics_dashboard.R)
+   → View system statistics
+   → Analyze trends
+   → Generate reports
+
+## 📝 Database Queries Used
+
+The dashboard executes these SQL queries:
+
+**Vaccination Data:**
+```sql
+SELECT vaccine_name, 
+       COUNT(DISTINCT patient_id) as patients_vaccinated,
+       COUNT(vaccination_id) as total_doses
+FROM Vaccinations
+GROUP BY vaccine_name
+```
+
+**Patient Demographics:**
+```sql
+SELECT TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) as age,
+       state, blood_type
+FROM Patients
+```
+
+**Medication Statistics:**
+```sql
+SELECT medication_name,
+       COUNT(DISTINCT patient_id) as patient_count
+FROM Medications
+GROUP BY medication_name
+ORDER BY patient_count DESC
+LIMIT 10
+```
+
+**Allergy Analysis:**
+```sql
+SELECT severity, allergy_type, COUNT(*) as count
+FROM Allergies
+WHERE severity IS NOT NULL
+GROUP BY severity, allergy_type
+```
+
+## 🎓 Project Requirement Satisfied
+
+✅ **MS Analytics Program Requirement:**
+"Since you are all part of the MS Analytics program, I require you to 
+build at least one analytics function into the application. This could 
+be a graph (ggplot2) or results of running a model (regression, 
+cluster analysis etc.)"
+
+**What We Built:**
+- Multiple ggplot2 visualizations
+- Bar charts, histograms, pie charts
+- Real-time data analysis
+- Interactive dashboard
+- Actionable insights
+
+This exceeds the minimum requirement by providing comprehensive 
+analytics across multiple dimensions of the healthcare data.
+
+## 🚀 Next Steps
+
+1. **Add More Test Data:**
+   - Register 5+ additional patients
+   - Complete medical histories for all
+
+2. **Generate Visualizations:**
+   - Launch dashboard
+   - Capture screenshots of all tabs
+
+3. **Prepare Presentation:**
+   - Summary statistics
+   - 2-3 key visualizations
+   - Insights and conclusions
+
+4. **Final Project Deliverables:**
+   - ERD diagram (Phase 1)
+   - Database schema (Phase 1)
+   - Working applications (Phases 2-4)
+   - Analytics dashboard (Phase 4)
+   - Project report/presentation
+
+## 🎉 Congratulations!
+
+You've completed all 4 phases of the License to Live: MIAS project!
+
+Your system now includes:
+✅ Secure database on AWS (10 tables)
+✅ Barcode scanner patient registration
+✅ Comprehensive medical information management
+✅ Real-time analytics dashboard
+
+You're ready to present and demonstrate your fully functional 
+healthcare information system!
