@@ -15,6 +15,7 @@ from plotly.subplots import make_subplots
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import database as db
+from admin_auth import admin_login_page, show_logout_button
 
 # Page configuration
 st.set_page_config(
@@ -22,6 +23,13 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
+
+# AUTHENTICATION CHECK - Must be logged in to access this page
+if not admin_login_page():
+    st.stop()
+
+# Show logout button in sidebar
+show_logout_button()
 
 # AGGRESSIVE CSS - Force white background and black text
 st.markdown("""
