@@ -21,6 +21,62 @@ st.set_page_config(
     layout="wide"
 )
 
+# AGGRESSIVE CSS - Force white background and black text
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #FFFFFF !important;
+    }
+    
+    .main .block-container {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+    }
+    
+    .stApp, .stApp * {
+        color: #000000 !important;
+    }
+    
+    /* Make sure all text elements are black */
+    h1, h2, h3, h4, h5, h6, p, span, div, label {
+        color: #000000 !important;
+    }
+    
+    /* Tabs styling */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #F0F2F6;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        color: #000000 !important;
+    }
+    
+    /* DataFrames */
+    .stDataFrame {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+    }
+    
+    /* Forms and inputs */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div > select,
+    .stDateInput > div > div > input {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+    }
+    
+    /* Metric values */
+    [data-testid="stMetricValue"] {
+        color: #000000 !important;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: #000000 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Custom CSS
 st.markdown("""
 <style>
