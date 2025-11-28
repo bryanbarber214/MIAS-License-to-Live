@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from aamva_parser import AAMVAParser
 import database as db
+from admin_auth import admin_login_page, show_logout_button
 
 # Page configuration - FORCE LIGHT THEME
 st.set_page_config(
@@ -21,6 +22,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# AUTHENTICATION CHECK - Must be logged in to access this page
+if not admin_login_page():
+    st.stop()
+
+# Show logout button in sidebar
+show_logout_button()
 
 # AGGRESSIVE CSS - Force white background and black text EVERYWHERE
 st.markdown("""
