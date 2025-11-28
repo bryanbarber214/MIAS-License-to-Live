@@ -5,6 +5,7 @@ Medical Information Access System
 """
 
 import streamlit as st
+from global_styles import apply_global_styles
 
 # Page configuration
 st.set_page_config(
@@ -13,6 +14,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Apply global styles
+apply_global_styles()
 
 # Custom CSS
 st.markdown("""
