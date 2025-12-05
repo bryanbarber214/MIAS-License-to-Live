@@ -2,6 +2,7 @@
 QR Code Generator Module
 License to Live: MIAS - Python/Streamlit Version
 Generates emergency access QR codes for patients
+CORRECTED: Uses correct page name for Streamlit Cloud
 """
 
 import qrcode
@@ -30,8 +31,8 @@ def create_emergency_qr_code(patient_id: int, emergency_token: str, base_url: st
     Returns:
         PIL Image object containing the QR code
     """
-    # Create emergency access URL
-    emergency_url = f"{base_url}/Emergency_Access?token={emergency_token}"
+    # Create emergency access URL - CORRECTED to match page name
+    emergency_url = f"{base_url}/7_Emergency_Access?token={emergency_token}"
     
     # Generate QR code
     qr = qrcode.QRCode(
