@@ -9,30 +9,16 @@ import pandas as pd
 from typing import Dict, List, Optional, Tuple
 import streamlit as st
 
-# Database configuration - SECURE VERSION
-# Uses Streamlit secrets instead of hardcoded credentials
-try:
-    DB_CONFIG = {
-        'host': st.secrets["database"]["host"],
-        'port': st.secrets["database"]["port"],
-        'user': st.secrets["database"]["user"],
-        'password': st.secrets["database"]["password"],
-        'database': st.secrets["database"]["database"],
-        'charset': 'utf8mb4',
-        'cursorclass': pymysql.cursors.DictCursor
-    }
-except Exception as e:
-    # Fallback error message if secrets not configured
-    st.error("⚠️ Database secrets not configured! Please add secrets in Streamlit Cloud.")
-    DB_CONFIG = {
-        'host': '',
-        'port': 3306,
-        'user': '',
-        'password': '',
-        'database': '',
-        'charset': 'utf8mb4',
-        'cursorclass': pymysql.cursors.DictCursor
-    }
+# Database configuration
+DB_CONFIG = {
+    'host': 'mias-db.chwakwqqclzv.us-east-2.rds.amazonaws.com',
+    'port': 3306,
+    'user': 'admin',
+    'password': 'License2Live',
+    'database': 'mias_db',
+    'charset': 'utf8mb4',
+    'cursorclass': pymysql.cursors.DictCursor
+}
 
 
 @st.cache_resource
@@ -802,3 +788,232 @@ def update_patient_medical_info(patient_id: int, field: str, value: str) -> Tupl
         
     except Exception as e:
         return False, f"Error updating {field}: {str(e)}"
+
+
+# ============================================================================
+# EMERGENCY QR CODE ACCESS FUNCTIONS
+# ============================================================================
+
+def save_emergency_token(patient_id: int, emergency_token: str) -> Tuple[bool, str]:
+    """
+    Save emergency access token for a patient
+    
+    Args:
+        patient_id: Patient's ID
+        emergency_token: Unique emergency access token
+        
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    try:
+        query = """
+            UPDATE Patients
+            SET emergency_token = %s
+            WHERE patient_id = %s
+        """
+        result = execute_query(query, (emergency_token, patient_id), fetch=False)
+        
+        if result and result > 0:
+            return True, "Emergency token saved successfully"
+        return False, "Failed to save emergency token"
+        
+    except Exception as e:
+        return False, f"Error saving emergency token: {str(e)}"
+
+
+def get_patient_by_emergency_token(emergency_token: str) -> Optional[Dict]:
+    """
+    Get patient information using emergency access token
+    
+    Args:
+        emergency_token: Emergency access token from QR code
+        
+    Returns:
+        Dictionary with patient data or None
+    """
+    query = """
+        SELECT *
+        FROM Patients
+        WHERE emergency_token = %s
+    """
+    results = execute_query(query, (emergency_token,))
+    return results[0] if results else None
+
+
+def log_emergency_access(patient_id: int, emergency_token: str) -> Tuple[bool, str]:
+    """
+    Log emergency access to patient record
+    
+    Args:
+        patient_id: Patient's ID
+        emergency_token: Emergency access token used
+        
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    try:
+        from datetime import datetime
+        
+        # Update last_emergency_access timestamp
+        update_query = """
+            UPDATE Patients
+            SET last_emergency_access = NOW()
+            WHERE patient_id = %s
+        """
+        execute_query(update_query, (patient_id,), fetch=False)
+        
+        # Log in Access_Log table if it exists
+        try:
+            log_query = """
+                INSERT INTO Access_Log 
+                (patient_id, access_type, access_time, notes)
+                VALUES (%s, %s, NOW(), %s)
+            """
+            execute_query(log_query, (
+                patient_id, 
+                'emergency_qr_access',
+                f'Emergency QR code scanned - Token: {emergency_token[:16]}...'
+            ), fetch=False)
+        except:
+            # Access_Log table might not exist, continue anyway
+            pass
+        
+        return True, "Emergency access logged"
+        
+    except Exception as e:
+        return False, f"Error logging emergency access: {str(e)}"
+
+
+def calculate_age(date_of_birth: str) -> int:
+    """
+    Calculate age from date of birth
+    
+    Args:
+        date_of_birth: Date of birth as string (YYYY-MM-DD)
+        
+    Returns:
+        Age in years
+    """
+    try:
+        from datetime import datetime
+        dob = datetime.strptime(str(date_of_birth), '%Y-%m-%d')
+        today = datetime.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        return age
+    except:
+        return 0
+
+
+def get_patient_emergency_summary(patient_id: int) -> Dict:
+    """
+    Get complete emergency summary for a patient
+    Includes all critical information needed in emergency situations
+    
+    Args:
+        patient_id: Patient's ID
+        
+    Returns:
+        Dictionary with emergency summary data
+    """
+    summary = {
+        'patient': get_patient_by_id(patient_id),
+        'allergies': get_allergies(patient_id),
+        'medications': get_medications(patient_id),
+        'conditions': get_conditions(patient_id),
+        'emergency_contacts': get_emergency_contacts(patient_id)
+    }
+    
+    # ============================================================================
+# EMERGENCY QR CODE ACCESS FUNCTIONS
+# ============================================================================
+
+def save_emergency_token(patient_id: int, emergency_token: str) -> Tuple[bool, str]:
+    """
+    Save emergency access token for a patient
+    
+    Args:
+        patient_id: Patient's ID
+        emergency_token: Unique emergency access token
+        
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    try:
+        query = """
+            UPDATE Patients
+            SET emergency_token = %s
+            WHERE patient_id = %s
+        """
+        result = execute_query(query, (emergency_token, patient_id), fetch=False)
+        
+        if result and result > 0:
+            return True, "Emergency token saved successfully"
+        return False, "Failed to save emergency token"
+        
+    except Exception as e:
+        return False, f"Error saving emergency token: {str(e)}"
+
+
+def get_patient_by_emergency_token(emergency_token: str) -> Optional[Dict]:
+    """
+    Get patient information using emergency access token
+    
+    Args:
+        emergency_token: Emergency access token from QR code
+        
+    Returns:
+        Dictionary with patient data or None
+    """
+    query = """
+        SELECT *
+        FROM Patients
+        WHERE emergency_token = %s
+    """
+    results = execute_query(query, (emergency_token,))
+    return results[0] if results else None
+
+
+def log_emergency_access(patient_id: int, emergency_token: str) -> Tuple[bool, str]:
+    """
+    Log emergency access to patient record
+    
+    Args:
+        patient_id: Patient's ID
+        emergency_token: Emergency access token used
+        
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    try:
+        from datetime import datetime
+        
+        # Update last_emergency_access timestamp
+        update_query = """
+            UPDATE Patients
+            SET last_emergency_access = NOW()
+            WHERE patient_id = %s
+        """
+        execute_query(update_query, (patient_id,), fetch=False)
+        
+        # Log in Access_Log table if it exists
+        try:
+            log_query = """
+                INSERT INTO Access_Log 
+                (patient_id, access_type, access_time, notes)
+                VALUES (%s, %s, NOW(), %s)
+            """
+            execute_query(log_query, (
+                patient_id, 
+                'emergency_qr_access',
+                f'Emergency QR code scanned - Token: {emergency_token[:16]}...'
+            ), fetch=False)
+        except:
+            # Access_Log table might not exist, continue anyway
+            pass
+        
+        return True, "Emergency access logged"
+        
+    except Exception as e:
+        return False, f"Error logging emergency access: {str(e)}"
+    
+    return summary
