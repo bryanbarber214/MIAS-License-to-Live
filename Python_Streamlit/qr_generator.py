@@ -191,3 +191,4 @@ def image_to_bytes(image: Image) -> bytes:
     buffered = io.BytesIO()
     image.save(buffered, format="PNG")
     return buffered.getvalue()
+
