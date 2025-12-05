@@ -14,6 +14,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from aamva_parser import AAMVAParser
 import database as db
 from admin_auth import admin_login_page, show_logout_button
+from qr_generator import (
+    generate_emergency_token, 
+    create_emergency_qr_code, 
+    create_printable_qr_card,
+    image_to_base64,
+    image_to_bytes
+)
 
 # Page configuration - FORCE LIGHT THEME
 st.set_page_config(
@@ -373,6 +380,22 @@ with col2:
     else:
         st.info("No data parsed yet. Scan a barcode to begin.")
 
+"""
+FIXED Patient Registration - QR Code Section
+This is the CORRECTED registration button section
+Replace lines 390-525 in your 1_Patient_Registration.py with this code
+"""
+
+# Initialize QR code session state
+if 'show_qr_code' not in st.session_state:
+    st.session_state.show_qr_code = False
+if 'qr_patient_data' not in st.session_state:
+    st.session_state.qr_patient_data = None
+if 'qr_image_data' not in st.session_state:
+    st.session_state.qr_image_data = None
+if 'qr_card_data' not in st.session_state:
+    st.session_state.qr_card_data = None
+
 st.markdown("---")
 
 # Action buttons
@@ -395,56 +418,140 @@ with col1:
             elif db.license_exists(st.session_state.patient_data['license_number']):
                 st.error("❌ Cannot register: License number already exists in database!")
             else:
-                # Insert into database
-                success, message = db.insert_patient(st.session_state.patient_data)
-                
-                if success:
-                    st.success(f"""
-                    ✅ {message}
+                try:
+                    # Insert into database
+                    success, message = db.insert_patient(st.session_state.patient_data)
                     
-                    **Patient:** {st.session_state.patient_data['first_name']} {st.session_state.patient_data['last_name']}  
-                    **License:** {st.session_state.patient_data['license_number']}
-                    
-                    **Patient Portal Access:**
-                    - License #: {st.session_state.patient_data['license_number']}
-                    - PIN: {st.session_state.patient_data['pin']}
-                    
-                    ⚠️ Please provide these credentials to the patient for portal access.
-                    """)
-                    
-                    # Clear form after success
-                    st.session_state.parsed_data = None
-                    st.session_state.patient_data = None
-                    st.balloons()
-                    st.rerun()
-                else:
-                    st.error(f"❌ Registration failed: {message}")
+                    if success:
+                        # Get the patient ID
+                        patient_license = st.session_state.patient_data['license_number']
+                        patient_query = db.execute_query(
+                            "SELECT patient_id FROM Patients WHERE license_number = %s",
+                            (patient_license,),
+                            fetch=True
+                        )
+                        
+                        if patient_query and len(patient_query) > 0:
+                            patient_id = patient_query[0]['patient_id']
+                            
+                            try:
+                                # Generate emergency access token
+                                emergency_token = generate_emergency_token()
+                                
+                                # Save token to database
+                                token_success, token_message = db.save_emergency_token(patient_id, emergency_token)
+                                
+                                if token_success:
+                                    # Generate QR code
+                                    qr_image = create_emergency_qr_code(patient_id, emergency_token)
+                                    
+                                    # Create printable card
+                                    qr_card = create_printable_qr_card(
+                                        st.session_state.patient_data,
+                                        qr_image,
+                                        emergency_token
+                                    )
+                                    
+                                    # Store in session state
+                                    st.session_state.show_qr_code = True
+                                    st.session_state.qr_patient_data = st.session_state.patient_data.copy()
+                                    st.session_state.qr_image_data = image_to_bytes(qr_image)
+                                    st.session_state.qr_card_data = image_to_bytes(qr_card)
+                                    
+                                    # Success message
+                                    st.success(f"""
+                                    ✅ {message}
+                                    
+                                    **Patient:** {st.session_state.patient_data['first_name']} {st.session_state.patient_data['last_name']}  
+                                    **License:** {st.session_state.patient_data['license_number']}
+                                    
+                                    **Patient Portal Access:**
+                                    - License #: {st.session_state.patient_data['license_number']}
+                                    - PIN: {st.session_state.patient_data['pin']}
+                                    
+                                    ⚠️ Please provide these credentials to the patient for portal access.
+                                    """)
+                                    
+                                    st.balloons()
+                                    st.info("📋 **Scroll down to see the Emergency QR Code**")
+                                    
+                                else:
+                                    st.warning(f"⚠️ Patient registered but QR code generation failed: {token_message}")
+                                    
+                            except Exception as qr_error:
+                                st.error(f"❌ QR Code generation error: {str(qr_error)}")
+                                st.info("Patient was registered successfully, but QR code could not be generated. You can generate it later from Medical Info Manager.")
+                        else:
+                            st.warning("⚠️ Patient registered but could not retrieve patient ID for QR generation")
+                    else:
+                        st.error(f"❌ Registration failed: {message}")
+                        
+                except Exception as e:
+                    st.error(f"❌ Registration error: {str(e)}")
 
 with col2:
     if st.button("🔄 Clear Form", use_container_width=True):
         st.session_state.parsed_data = None
         st.session_state.patient_data = None
+        st.session_state.show_qr_code = False
+        st.session_state.qr_patient_data = None
+        st.session_state.qr_image_data = None
+        st.session_state.qr_card_data = None
         st.rerun()
 
-# Sidebar
-with st.sidebar:
-    st.markdown("### 📋 Patient Registration")
+# Display QR code if available (OUTSIDE the button block)
+if st.session_state.show_qr_code and st.session_state.qr_image_data:
+    st.markdown("---")
+    st.markdown("### 🚨 Emergency Medical Access QR Code")
+    
     st.info("""
-    This page allows you to register new patients by scanning their driver's license.
+    **Important:** This QR code provides emergency access to the patient's critical medical information.
     
-    **Requirements:**
-    - Eyoyo EY-009P barcode scanner
-    - Bluetooth connection to computer
-    - Valid US driver's license (AAMVA format)
+    - Give this QR code to the patient
+    - Patient should keep it in their wallet or save to phone
+    - Medical professionals can scan it in emergencies
+    - No login required for emergency access
     """)
     
-    st.markdown("### 🔍 Scanner Status")
-    st.success("Ready for scan")
+    col_qr1, col_qr2 = st.columns([1, 1])
     
-    st.markdown("### 💡 Tips")
-    st.markdown("""
-    - Ensure scanner is paired via Bluetooth
-    - Click in the text area before scanning
-    - The @ symbol and line breaks are normal
-    - System detects duplicate license numbers
-    """)
+    with col_qr1:
+        st.markdown("#### QR Code Only")
+        # Display QR code from session state
+        st.image(st.session_state.qr_image_data, width=300)
+        
+        # Download button for QR code
+        st.download_button(
+            label="📥 Download QR Code",
+            data=st.session_state.qr_image_data,
+            file_name=f"emergency_qr_{st.session_state.qr_patient_data['license_number']}.png",
+            mime="image/png",
+            use_container_width=True
+        )
+    
+    with col_qr2:
+        st.markdown("#### Printable Card")
+        # Display printable card from session state
+        st.image(st.session_state.qr_card_data, width=400)
+        
+        # Download button for card
+        st.download_button(
+            label="📥 Download Printable Card",
+            data=st.session_state.qr_card_data,
+            file_name=f"emergency_card_{st.session_state.qr_patient_data['license_number']}.png",
+            mime="image/png",
+            use_container_width=True
+        )
+    
+    st.markdown("---")
+    
+    # Complete registration button
+    if st.button("✅ Complete Registration & Start New", type="primary", use_container_width=True):
+        st.session_state.parsed_data = None
+        st.session_state.patient_data = None
+        st.session_state.show_qr_code = False
+        st.session_state.qr_patient_data = None
+        st.session_state.qr_image_data = None
+        st.session_state.qr_card_data = None
+        st.success("✅ Registration completed! Ready for next patient.")
+        st.rerun()
