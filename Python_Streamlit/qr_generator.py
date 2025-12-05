@@ -19,7 +19,7 @@ def generate_emergency_token() -> str:
     return secrets.token_urlsafe(32)
 
 
-def create_emergency_qr_code(patient_id: int, emergency_token: str, base_url: str = "https://mias-license-to-live.streamlit.app") -> Image:
+def create_emergency_qr_code(patient_id: int, emergency_token: str, base_url: str = "https://bryanbarber214.github.io/MIAS-License-to-Live/emergency_access.html") -> Image:
     """
     Create QR code for emergency medical access
     
@@ -32,7 +32,7 @@ def create_emergency_qr_code(patient_id: int, emergency_token: str, base_url: st
         PIL Image object containing the QR code
     """
     # Create emergency access URL - CORRECTED to match page name
-    emergency_url = f"{base_url}/7_Emergency_Access?token={emergency_token}"
+    emergency_url = f"{base_url}?token={emergency_token}"
     
     # Generate QR code
     qr = qrcode.QRCode(
