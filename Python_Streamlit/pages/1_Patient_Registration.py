@@ -381,9 +381,7 @@ with col2:
         st.info("No data parsed yet. Scan a barcode to begin.")
 
 """
-FIXED Patient Registration - QR Code Section
-This is the CORRECTED registration button section
-Replace lines 390-525 in your 1_Patient_Registration.py with this code
+
 """
 
 # Initialize QR code session state
