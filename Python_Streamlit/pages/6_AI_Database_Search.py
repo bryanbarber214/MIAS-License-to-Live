@@ -106,11 +106,12 @@ st.markdown("""
 
 # Check for API key
 api_key_available = False
+api_key = None
 try:
-    api_key = st.secrets.get("ANTHROPIC_API_KEY", None)
-    if api_key:
-        api_key_available = True
-except:
+    api_key = st.secrets["ANTHROPIC_API_KEY"]
+    api_key_available = True
+except Exception as e:
+    st.error(f"Debug: Error accessing API key - {str(e)}")
     pass
 
 if not api_key_available:
