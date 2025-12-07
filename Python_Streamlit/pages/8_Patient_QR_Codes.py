@@ -7,6 +7,7 @@ View and download patient emergency QR codes
 import streamlit as st
 import sys
 import os
+from io import BytesIO
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -192,18 +193,19 @@ if search_button and search_query:
                             emergency_token=patient['emergency_token']
                         )
                         
-                        # Convert to RGB mode for Streamlit (fix display issues)
-                        if qr_image.mode != 'RGB':
-                            qr_image = qr_image.convert('RGB')
+                        # Convert to bytes for reliable display
+                        qr_buffer = BytesIO()
+                        qr_image.save(qr_buffer, format='PNG')
+                        qr_buffer.seek(0)
                         
-                        # Display QR code
-                        st.image(qr_image, caption=f"Emergency QR Code for {patient['first_name']} {patient['last_name']}", use_container_width=False)
+                        # Display QR code from bytes
+                        st.image(qr_buffer, caption=f"Emergency QR Code for {patient['first_name']} {patient['last_name']}", width=300)
                         
                         # Download button for QR code
-                        qr_bytes = qr_generator.image_to_bytes(qr_image)
+                        qr_download_bytes = qr_generator.image_to_bytes(qr_image)
                         st.download_button(
                             label="📥 Download QR Code",
-                            data=qr_bytes,
+                            data=qr_download_bytes,
                             file_name=f"emergency_qr_{patient['patient_id']}_{patient['last_name']}.png",
                             mime="image/png",
                             use_container_width=True
@@ -226,18 +228,19 @@ if search_button and search_query:
                             emergency_token=patient['emergency_token']
                         )
                         
-                        # Convert to RGB mode for Streamlit
-                        if card_image.mode != 'RGB':
-                            card_image = card_image.convert('RGB')
+                        # Convert to bytes for reliable display
+                        card_buffer = BytesIO()
+                        card_image.save(card_buffer, format='PNG')
+                        card_buffer.seek(0)
                         
-                        # Display card
-                        st.image(card_image, caption="Wallet-sized Emergency Card", use_container_width=True)
+                        # Display card from bytes
+                        st.image(card_buffer, caption="Wallet-sized Emergency Card", use_container_width=True)
                         
                         # Download button for card
-                        card_bytes = qr_generator.image_to_bytes(card_image)
+                        card_download_bytes = qr_generator.image_to_bytes(card_image)
                         st.download_button(
                             label="📥 Download Printable Card",
-                            data=card_bytes,
+                            data=card_download_bytes,
                             file_name=f"emergency_card_{patient['patient_id']}_{patient['last_name']}.png",
                             mime="image/png",
                             use_container_width=True
