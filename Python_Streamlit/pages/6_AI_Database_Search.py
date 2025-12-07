@@ -92,6 +92,16 @@ st.markdown("""
         border-radius: 5px;
         margin: 1rem 0;
     }
+    
+    /* Smooth dataframe rendering */
+    .stDataFrame {
+        overflow-x: auto !important;
+    }
+    
+    /* Prevent layout shift */
+    iframe[title="streamlit_app"] {
+        overflow: hidden !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -444,8 +454,13 @@ if search_button and user_query:
                 if isinstance(query_result, pd.DataFrame):
                     st.success(f"✅ Query executed successfully! Found {len(query_result)} results.")
                     
-                    # Display results
-                    st.dataframe(query_result, use_container_width=True)
+                    # Display results with better formatting
+                    st.dataframe(
+                        query_result, 
+                        use_container_width=True,
+                        height=400,  # Fixed height to prevent jumping
+                        hide_index=True  # Hide row index numbers
+                    )
                     
                     # Download button
                     csv = query_result.to_csv(index=False)
