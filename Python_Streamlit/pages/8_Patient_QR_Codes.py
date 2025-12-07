@@ -192,8 +192,12 @@ if search_button and search_query:
                             emergency_token=patient['emergency_token']
                         )
                         
+                        # Convert to RGB mode for Streamlit (fix display issues)
+                        if qr_image.mode != 'RGB':
+                            qr_image = qr_image.convert('RGB')
+                        
                         # Display QR code
-                        st.image(qr_image, caption=f"Emergency QR Code for {patient['first_name']} {patient['last_name']}")
+                        st.image(qr_image, caption=f"Emergency QR Code for {patient['first_name']} {patient['last_name']}", use_container_width=False)
                         
                         # Download button for QR code
                         qr_bytes = qr_generator.image_to_bytes(qr_image)
@@ -222,8 +226,12 @@ if search_button and search_query:
                             emergency_token=patient['emergency_token']
                         )
                         
+                        # Convert to RGB mode for Streamlit
+                        if card_image.mode != 'RGB':
+                            card_image = card_image.convert('RGB')
+                        
                         # Display card
-                        st.image(card_image, caption="Wallet-sized Emergency Card")
+                        st.image(card_image, caption="Wallet-sized Emergency Card", use_container_width=True)
                         
                         # Download button for card
                         card_bytes = qr_generator.image_to_bytes(card_image)
