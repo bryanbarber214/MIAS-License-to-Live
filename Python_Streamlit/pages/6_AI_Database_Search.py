@@ -222,6 +222,23 @@ if not api_key_available:
 # Import Anthropic after we have the key
 try:
     import anthropic
+    
+    # DEBUG: Show key format (safely)
+    if api_key:
+        key_length = len(api_key)
+        key_start = api_key[:10] if len(api_key) > 10 else api_key
+        key_end = api_key[-4:] if len(api_key) > 4 else ""
+        st.info(f"🔑 Key format check: Length={key_length}, Start={key_start}..., End=...{key_end}")
+        
+        # Check for common issues
+        if api_key != api_key.strip():
+            st.warning("⚠️ Key has extra whitespace - cleaning...")
+            api_key = api_key.strip()
+        
+        if '\n' in api_key or '\r' in api_key:
+            st.warning("⚠️ Key has newline characters - removing...")
+            api_key = api_key.replace('\n', '').replace('\r', '')
+    
     client = anthropic.Anthropic(api_key=api_key)
     st.success("✅ Anthropic client initialized successfully!")
 except ImportError:
