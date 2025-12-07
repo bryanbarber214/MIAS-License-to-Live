@@ -104,143 +104,75 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# BULLETPROOF API KEY DETECTION
+# API KEY DETECTION
 api_key_available = False
 api_key = None
 
-st.info("🔍 Checking for API key...")
-
-# Method 1: Try root level
+# Try multiple methods to find the API key
+# Method 1: Root level
 try:
     if hasattr(st.secrets, 'ANTHROPIC_API_KEY'):
         api_key = st.secrets.ANTHROPIC_API_KEY
         api_key_available = True
-        st.success("✅ Found API key at root level (Method 1)")
-except Exception as e:
-    st.warning(f"Method 1 failed: {str(e)}")
+except:
+    pass
 
-# Method 2: Try dictionary access
+# Method 2: Dictionary access
 if not api_key_available:
     try:
         api_key = st.secrets["ANTHROPIC_API_KEY"]
         api_key_available = True
-        st.success("✅ Found API key via dictionary access (Method 2)")
-    except Exception as e:
-        st.warning(f"Method 2 failed: {str(e)}")
+    except:
+        pass
 
-# Method 3: Try in admin section
+# Method 3: In admin section
 if not api_key_available:
     try:
         api_key = st.secrets["admin"]["ANTHROPIC_API_KEY"]
         api_key_available = True
-        st.success("✅ Found API key in admin section (Method 3)")
-    except Exception as e:
-        st.warning(f"Method 3 failed: {str(e)}")
+    except:
+        pass
 
-# Method 4: Try get method
+# Method 4: Get method
 if not api_key_available:
     try:
         api_key = st.secrets.get("ANTHROPIC_API_KEY")
         if api_key:
             api_key_available = True
-            st.success("✅ Found API key via get method (Method 4)")
-    except Exception as e:
-        st.warning(f"Method 4 failed: {str(e)}")
+    except:
+        pass
 
-# DEBUG: Show what's available
-if not api_key_available:
-    st.error("❌ Could not find ANTHROPIC_API_KEY in any location")
-    
-    with st.expander("🔍 DEBUG: Show Available Secrets Structure"):
-        try:
-            st.write("**Available root-level keys:**")
-            root_keys = []
-            for key in dir(st.secrets):
-                if not key.startswith('_'):
-                    root_keys.append(key)
-            st.write(root_keys)
-            
-            st.write("\n**Secrets as dictionary:**")
-            try:
-                secrets_dict = dict(st.secrets)
-                # Don't show actual values, just keys
-                st.write(list(secrets_dict.keys()))
-            except:
-                st.write("Cannot convert to dict")
-                
-            st.write("\n**Check individual sections:**")
-            if hasattr(st.secrets, 'database'):
-                st.write("✅ database section exists")
-            if hasattr(st.secrets, 'admin'):
-                st.write("✅ admin section exists")
-                try:
-                    admin_keys = list(st.secrets.admin.keys())
-                    st.write(f"Admin section keys: {admin_keys}")
-                except:
-                    pass
-                    
-        except Exception as e:
-            st.write(f"Debug error: {str(e)}")
-
+# If API key not found, show error and stop
 if not api_key_available:
     st.error("""
     ⚠️ **Anthropic API Key Not Configured**
     
-    **Your secrets.toml should look EXACTLY like this:**
+    To use AI Database Search, you need to add your Anthropic API key to Streamlit secrets.
     
-    ```toml
-    [database]
-    host = "your-host-here"
-    port = 3306
-    user = "admin"
-    password = "your-password"
-    database = "mias_db"
+    **How to get an API key:**
+    1. Go to https://console.anthropic.com/
+    2. Sign up for a free account
+    3. Navigate to API Keys
+    4. Create a new key
+    5. Add it to your Streamlit app secrets:
+       - Settings → Secrets
+       - Add: `ANTHROPIC_API_KEY = "your-key-here"`
     
-    [admin]
-    username = "admin"
-    password = "your-password"
-    
-    ANTHROPIC_API_KEY = "sk-ant-api03-..."
-    ```
-    
-    **CRITICAL:**
-    - Blank line after [admin] section
-    - ANTHROPIC_API_KEY is NOT inside [admin] or [database]
-    - It's at the root level (no brackets)
-    
-    **Steps to fix:**
-    1. Go to Settings → Secrets in Streamlit Cloud
-    2. Copy the format above
-    3. Save
-    4. Reboot app
-    5. Wait 3 minutes
-    
-    **Free tier:** Get $5 free credits at https://console.anthropic.com/
+    **Free tier includes:** $5 of free credits (sufficient for demos and testing)
     """)
     st.stop()
 
-# Import Anthropic after we have the key
+# Import Anthropic library
 try:
     import anthropic
     
-    # DEBUG: Show key format (safely)
+    # Clean the API key (remove any whitespace or newlines)
     if api_key:
-        key_length = len(api_key)
-        key_start = api_key[:10] if len(api_key) > 10 else api_key
-        key_end = api_key[-4:] if len(api_key) > 4 else ""
-        st.info(f"🔑 Key format check: Length={key_length}, Start={key_start}..., End=...{key_end}")
-        
-        # Check for common issues
-        if api_key != api_key.strip():
-            st.warning("⚠️ Key has extra whitespace - cleaning...")
-            api_key = api_key.strip()
-        
-        if '\n' in api_key or '\r' in api_key:
-            st.warning("⚠️ Key has newline characters - removing...")
-            api_key = api_key.replace('\n', '').replace('\r', '')
+        api_key = api_key.strip().replace('\n', '').replace('\r', '')
     
+    # Initialize Anthropic client
     client = anthropic.Anthropic(api_key=api_key)
-    st.success("✅ Anthropic client initialized successfully!")
+    
 except ImportError:
     st.error("""
     ⚠️ **Anthropic library not installed**
@@ -249,7 +181,7 @@ except ImportError:
     """)
     st.stop()
 except Exception as e:
-    st.error(f"Error initializing Anthropic client: {str(e)}")
+    st.error(f"⚠️ Error initializing Anthropic client: {str(e)}")
     st.stop()
 
 # Initialize session state
